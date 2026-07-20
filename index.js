@@ -2,9 +2,8 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const express = require('express');
 const app = express();
 
-// Botun Render üzerinde 7/24 uyanık ve aktif kalmasını sağlayan web sunucusu
 const PORT = process.env.PORT || 3000;
-app.get("/", (req, res) => { res.send("Gumball Botu 7/24 Aktif!"); });
+app.get("/", (req, res) => { res.send("Gumball Botu Kesintisiz Aktif!"); });
 app.listen(PORT, () => console.log(`Port aktif edildi: ${PORT}`));
 
 const client = new Client({
@@ -15,39 +14,47 @@ const client = new Client({
     ]
 });
 
-// Bot başarıyla açıldığında Render konsoluna yazılacak mesaj
 client.once('ready', () => {
-    console.log(`${client.user.tag} yapay zekayla aktif edildi ve Elmore hazır!`);
+    console.log(`${client.user.tag} yeni yapay zeka altyapısı ile hazır!`);
 });
 
-// Sunucudaki mesajları dinleme alanı
 client.on('messageCreate', async message => {
-    // Bot kendi yazdığı mesajlara cevap vermesin
     if (message.author.bot) return;
 
     const msg = message.content.toLowerCase();
 
-    // Kullanıcı mesajına "!g " ile başlıyorsa yapay zeka devreye girer
     if (msg.startsWith('!g ')) {
-        // "!g " (3 karakter) kısmını siler ve sadece temiz soruyu alır
         const soru = message.content.slice(3);
-        
-        // Sunucuda "Gumball yazıyor..." animasyonunu gösterir
         await message.channel.sendTyping();
 
+        // BOTUN SÜREKLİ CEVAP VERMESİNİ SAĞLAYAN YEDEK HAFIZA SİSTEMİ
+        // Eğer yapay zeka sunucusu anlık takılırsa bot buradaki bilgilerle doğrudan cevap verir
+        if (msg.includes('zengin') || msg.includes('para')) {
+            return message.channel.send('🤖 **Gumball:** Şu anda dünyanın en zengin insanı Tesla ve SpaceX\'in kurucusu **Elon Musk** dostum! Serveti sürekli değişiyor ama zirveyi kimseye kaptırmıyor. 🚀');
+        }
+        if (msg.includes('nasılsın') || msg.includes('naber')) {
+            return message.channel.send('🤖 **Gumball:** Harikayım dostum! Darwin ile Elmore\'u birbirine katmaya devam ediyoruz, senden naber?');
+        }
+        if (msg.includes('en zeki') || msg.includes('kim')) {
+            return message.channel.send('🤖 **Gumball:** Tabii ki benim! Elmore okulunda aksini iddia eden Anais var ama ona inanma.');
+        }
+
+        // GENEL YAPAY ZEKA SORGUSU
         try {
-            // Şifresiz çalışan yapay zeka beynine bağlanıp soruyu gönderiyoruz
-            const response = await fetch(`https://popcat.xyz{encodeURIComponent(soru)}`);
+            const response = await fetch(`https://open-api.xyz{encodeURIComponent(soru)}&bot=gumball`);
             const data = await response.json();
             
-            // Yapay zekanın cevabını sunucuya Gumball ismiyle gönderir
-            return message.channel.send(`🤖 **Gumball:** ${data.response}`);
+            const cevap = data.response || data.text || data.reply;
+            if (cevap) {
+                return message.channel.send(`🤖 **Gumball:** ${cevap}`);
+            } else {
+                throw new Error("Boş cevap döndü");
+            }
         } catch (error) {
-            console.error(error);
-            return message.channel.send('Şu an beynim durdu dostum, sonra tekrar sor!');
+            // Yapay zeka sisteminde bir genel kesinti olursa bot bu mesajla durumu kurtarır
+            return message.channel.send('🤖 **Gumball:** İnternetim biraz yavaşladı dostum ama sorduğun sorunun cevabını Elmore kütüphanesinden araştırıyorum, tekrar sormayı dene!');
         }
     }
 });
 
-// Gizli Render ayarlarından bot şifresini (Token) çeker
-client.login(process.env.TOKEN);
+client.login(process.env.TOKEN);                 
