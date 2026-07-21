@@ -3,7 +3,7 @@ const express = require('express');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
-app.get("/", (req, res) => { res.send("Gumball Canli Sohbet Modu Aktif!"); });
+app.get("/", (req, res) => { res.send("Gumball Elmore Sistemi Aktif!"); });
 app.listen(PORT, () => console.log(`Port aktif: ${PORT}`));
 
 const client = new Client({
@@ -14,11 +14,8 @@ const client = new Client({
     ]
 });
 
-// Sohbet geçmişini tutan havuz
-const sohbetGecmisi = new Map();
-
 client.once('ready', () => {
-    console.log(`${client.user.tag} derin sohbet hafizasiyla aktif!`);
+    console.log(`${client.user.tag} çökməyən daxili yaddaşla aktiv edildi!`);
 });
 
 client.on('messageCreate', async message => {
@@ -28,31 +25,46 @@ client.on('messageCreate', async message => {
 
     if (msg.startsWith('!g ')) {
         const soru = message.content.slice(3);
-        const userId = message.author.id;
-
-        if (!sohbetGecmisi.has(userId)) {
-            sohbetGecmisi.set(userId, "");
-        }
-        
-        let eskiKonusmalar = sohbetGecmisi.get(userId);
         await message.channel.sendTyping();
 
+        // 1. DÜNYANIN EN ZENGİN İNSANI SORGUSU
+        if (msg.includes('zengin') || msg.includes('servet') || msg.includes('para') || msg.includes('elon')) {
+            return message.channel.send('🤖 **Gumball:** Hazırda dünyanın ən zəngin insanı Tesla və SpaceX-in qurucusu **Elon Musk** dostum! [Forbes] Adamın 250 milyard dollardan çox sərvəti var, kosmosa raket göndərib pulu qırır. 🚀 Biz hələ Elmore məktəbində Darwinlə pulsuz nahar axtaraq...');
+        }
+
+        // 2. YOUTUBER SORGUSU
+        if (msg.includes('youtuber') || msg.includes('youtube') || msg.includes('mrbeast')) {
+            return message.channel.send('🤖 **Gumball:** Dünyanın ən böyük və ən çox abunəçisi olan fərdi YouTuber-ı **MrBeast**-dir dostum! Adam videolarda milyonlarla dollar paylayır. Kaş bir gün Elmore-a gəlsə də bizə də bir az pul versə, yoxsa Riçard yenə bütün ev pulunu pizzaya xərcləyəcək! 🎥');
+        }
+
+        // 3. SOHBET / NABER SORGUSU
+        if (msg.includes('naber') || msg.includes('nasılsın') || msg.includes('selam')) {
+            return message.channel.send('🤖 **Gumball:** Harikayım dostum! Darwinlə birlikdə Elmore-u bir-birinə qatırıq. Anais yenə bizə dərs öyrətməyə çalışır amma biz təbii ki, onu dinləmirik. Səndə nə var nə yox, sunucuda vəziyyətlər necə getdi?');
+        }
+
+        // 4. EN ZEKİ KİM SORGUSU
+        if (msg.includes('zeki') || msg.includes('akıllı')) {
+            return message.channel.send('🤖 **Gumball:** Əlbəttə ki, mənəm dostum! Elmore məktəbinin ən dahi pişiyiyəm. Evdə Anais özünü ağıllı göstərməyə çalışır amma hamısı fırıldaqdır, inanma ona!');
+        }
+
+        // 5. OYUN SORGUSU (ROBLOX / CS)
+        if (msg.includes('oyun') || msg.includes('roblox') || msg.includes('counter')) {
+            return message.channel.send('🤖 **Gumball:** Oyun oynamaq? Bax bu tam mənlik işdir dostum! Darwinlə gün boyu kompüter arxasında oturub oyun oynayırıq, sonra anam gəlib bizi evdən qovur. Sən hansı oyunu oynayırsan görüm?');
+        }
+
+        // GENEL YAPAY ZEKA SORGUSU (EĞER FARKLI BİR ŞEY SORULURSA)
         try {
-            // ŞİFRESİZ ve doğrudan en güncel yapay zekaya bağlanan akıllı köprü
-            const response = await fetch(`https://kastg.xyz{encodeURIComponent("Sen Discord'daki çizgi film karakteri Gumball'sın. Tıpkı gelişmiş bir yapay zeka gibi her şeyi bil. Kelimeler yanlış yazılsa bile anla. Uzun, detaylı cümlelerle esprili fırlama bir Gumball gibi konuş. Geçmiş konuşma özeti şudur: " + eskiKonusmalar + " Yeni Soru: " + soru)}`);
-            const data = await response.json();
+            const response = await fetch(`https://vyturex.com{encodeURIComponent(soru)}`);
+            const text = await response.text();
             
-            const cevap = data.result || data.response || data.text;
-            
-            if (cevap) {
-                // Yeni konuşmayı hafızaya ekle
-                sohbetGecmisi.set(userId, eskiKonusmalar + ` Kullanici: ${soru} | Gumball: ${cevap} \n`);
-                return message.channel.send(`🤖 **Gumball:** ${cevap}`);
+            if (text && !text.includes("Error") && !text.includes("Rate limit")) {
+                return message.channel.send(`🤖 **Gumball:** ${text}`);
             } else {
-                throw new Error("Boş cevap");
+                throw new Error("Daxili cavab");
             }
         } catch (error) {
-            return message.channel.send('🤖 **Gumball:** Uzun uzun konuşalım diyordun ama internetim biraz yavaşladı dostum. Sorunu hemen bir daha sorsana!');
+            // Əgər internet tamamilə kəsilsə, bot bu uzun və əyləncəli Gumball cümləsi ilə vəziyyəti xilas edir
+            return message.channel.send('🤖 **Gumball:** Sorduğun bu sual Elmore məktəbindəki test imtahanlarından daha çətin çıxdı dostum! Amma sənə uzun-uzun cavab verim: Mən hər şeyi bilirəm, sadəcə hazırda beynimin daxili şəbəkəsində Darwin naqilləri qoparıb. Sualını bir də yaz, bu səfər tam Gumball kimi cavablayacam! 💥');
         }
     }
 });
